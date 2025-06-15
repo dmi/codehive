@@ -18,8 +18,8 @@ INFO_WIDTH = WIDTH - GAME_WIDTH  # 30% для информации
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Hive")
 
-# Создание карты
-map = Map(width=25, height=18, TILE_SIZE=TILE_SIZE)
+# Создание большой карты
+map = Map(width=100, height=100, TILE_SIZE=TILE_SIZE)
 
 # Создание персонажей
 entities = get_all_characters(map)
@@ -29,6 +29,11 @@ clock = pygame.time.Clock()
 running = True
 paused = False
 selected_entity = entities[0] if entities else None
+
+# Логика скроллинга
+camera_x = 0
+camera_y = 0
+camera_speed = 0.1  # Скорость скроллинга
 
 while running:
     dt = clock.tick(60)
@@ -51,6 +56,12 @@ while running:
         for entity in entities:
             entity.update(dt)
 
+    # Логика скроллинга
+    if selected_entity:
+        # Плавное смещение камеры
+        camera_x += (selected_entity.x * TILE_SIZE - camera_x) * camera_speed
+        camera_y += (selected_entity.y * TILE_SIZE - camera_y) * camera_speed
+
     # Отрисовка
     screen.fill((0, 0, 0))  # чёрный фон
 
@@ -59,7 +70,8 @@ while running:
         for x in range(map.width):
             tile = map.get_tile(x, y)
             color = tile.get_color()
-            pygame.draw.rect(screen, color, (x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE))
+            screen.blit(pygame.Surface((TILE_SIZE, TILE_SIZE)), (x * TILE_SIZE - camera_x, y * TILE_SIZE - camera_y))
+            pygame.draw.rect(screen, color, (x * TILE_SIZE - camera_x, y * TILE_SIZE - camera_y, TILE_SIZE, TILE_SIZE))
 
     # Отображение предметов
     for y in range(map.height):
@@ -68,13 +80,12 @@ while running:
             for item in tile.items:
                 if item.name == "Камень":
                     emoji = load_emoji("🪨", (TILE_SIZE, TILE_SIZE))
-                    screen.blit(emoji, (x * TILE_SIZE, y * TILE_SIZE))
+                    screen.blit(emoji, (x * TILE_SIZE - camera_x, y * TILE_SIZE - camera_y))
 
     # Отображение персонажей
-    # В цикле отрисовки персонажей
     for entity in entities:
         emoji = load_emoji(entity.icon, (TILE_SIZE, TILE_SIZE))
-        screen.blit(emoji, (entity.x * TILE_SIZE + entity.vx, entity.y * TILE_SIZE + entity.vy))
+        screen.blit(emoji, (entity.x * TILE_SIZE - camera_x + entity.vx, entity.y * TILE_SIZE - camera_y + entity.vy))
 
     # Отрисовка окна информации
     pygame.draw.rect(screen, (30, 30, 30), (GAME_WIDTH, 0, INFO_WIDTH, HEIGHT))  # тёмно-серый фон

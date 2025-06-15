@@ -1,4 +1,5 @@
 from logger import record
+
 class Entity:
     def __init__(self, name, x, y, type="robot", hp=100, strength=10, icon="🤖", state="idle", idle=250, map=None):
         self.name = name

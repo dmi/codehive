@@ -18,7 +18,7 @@ class Tile:
         return (255, 255, 255)  # Пустая клетка
 
 class Map:
-    def __init__(self, width=25, height=18, TILE_SIZE=32):
+    def __init__(self, width=100, height=100, TILE_SIZE=32):
         self.width = width
         self.height = height
         self.TILE_SIZE = TILE_SIZE
@@ -52,8 +52,8 @@ class Map:
         return itms
     
     def dig(self, entity):
-        if self.is_bound(entity.x + entity.dx, entity.y +entity.dy):
-            tile = entity.map.get_tile(entity.x + entity.dx, entity.y +entity.dy)
+        if self.is_bound(entity.x + entity.dx, entity.y + entity.dy):
+            tile = entity.map.get_tile(entity.x + entity.dx, entity.y + entity.dy)
             if not tile.is_walkable and tile.hardness > 0:
                 tile.hardness -= 1
                 if tile.hardness == 0:
