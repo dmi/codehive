@@ -1,23 +1,25 @@
 from logger import record
+from pygame_emojis import load_emoji
 
 class Entity:
     def __init__(self, name, x, y, type="robot", hp=100, strength=10, icon="🤖", state="idle", idle=250, map=None):
         self.name = name
+        self.map = map  # Теперь инициализируется при создании
         self.x = x
         self.y = y
         self.dx = 0  # направление по x
         self.dy = 0  # направление по y
+        self.vx = 0  # смещение по x
+        self.vy = 0  # смещение по y
         self.type = type
         self.hp = hp
         self.strength = strength
         self.inventory = []
         self.icon = icon  # Теперь это эмодзи
+        self.emoji = load_emoji(self.icon, (self.map.TILE_SIZE, self.map.TILE_SIZE))
         self.state = state
         self.idle = idle  # время между действиями
         self.cooldown = idle  # время до следующего действия
-        self.map = map  # Теперь инициализируется при создании
-        self.vx = 0  # смещение по x
-        self.vy = 0  # смещение по y
 
     def update(self, dt):
         self.cooldown -= dt

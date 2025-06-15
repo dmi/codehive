@@ -15,11 +15,12 @@ WIDTH, HEIGHT = 1000, 600
 TILE_SIZE = 32
 GAME_WIDTH = int(WIDTH * 0.7)  # 70% для карты
 INFO_WIDTH = WIDTH - GAME_WIDTH  # 30% для информации
+GAME_HEIGHT = HEIGHT
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Hive")
 
 # Создание большой карты
-map = Map(width=100, height=100, TILE_SIZE=TILE_SIZE)
+map = Map(width=1300, height=1300, TILE_SIZE=TILE_SIZE)
 
 # Создание персонажей
 entities = get_all_characters(map)
@@ -31,8 +32,8 @@ paused = False
 selected_entity = entities[0] if entities else None
 
 # Логика скроллинга
-camera_x = 0
-camera_y = 0
+camera_x = selected_entity.x * TILE_SIZE
+camera_y = selected_entity.y * TILE_SIZE
 camera_speed = 0.1  # Скорость скроллинга
 
 while running:
@@ -59,8 +60,8 @@ while running:
     # Логика скроллинга
     if selected_entity:
         # Плавное смещение камеры
-        camera_x += (selected_entity.x * TILE_SIZE - camera_x) * camera_speed
-        camera_y += (selected_entity.y * TILE_SIZE - camera_y) * camera_speed
+        camera_x += (selected_entity.x * TILE_SIZE - GAME_WIDTH // 2 - camera_x) * camera_speed
+        camera_y += (selected_entity.y * TILE_SIZE - GAME_HEIGHT // 2 - camera_y) * camera_speed
 
     # Отрисовка
     screen.fill((0, 0, 0))  # чёрный фон
@@ -84,8 +85,8 @@ while running:
 
     # Отображение персонажей
     for entity in entities:
-        emoji = load_emoji(entity.icon, (TILE_SIZE, TILE_SIZE))
-        screen.blit(emoji, (entity.x * TILE_SIZE - camera_x + entity.vx, entity.y * TILE_SIZE - camera_y + entity.vy))
+        screen.blit(entity.emoji, (entity.x * TILE_SIZE - camera_x + entity.vx, entity.y * TILE_SIZE - camera_y + entity.vy))
+        #screen.blit(emoji, (map.width // 2 * TILE_SIZE + entity.vx, map.height // 2 * TILE_SIZE + entity.vy))
 
     # Отрисовка окна информации
     pygame.draw.rect(screen, (30, 30, 30), (GAME_WIDTH, 0, INFO_WIDTH, HEIGHT))  # тёмно-серый фон
@@ -96,7 +97,8 @@ while running:
         info = f"""{selected_entity.name}
 HP: {selected_entity.hp}
 Состояние: {selected_entity.state}
-x: {selected_entity.x} y: {selected_entity.y}"""
+x: {selected_entity.x} y: {selected_entity.y}
+vx: {int(selected_entity.x * TILE_SIZE - camera_x + selected_entity.vx)} vy: {int(selected_entity.y * TILE_SIZE - camera_y + selected_entity.vy)}"""
         i = 0
         for l in info.split('\n'):
             info_text = font.render(l, True, COLOR)
