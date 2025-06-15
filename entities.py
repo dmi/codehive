@@ -1,24 +1,19 @@
 class Entity:
-    def __init__(self, name, x, y, type="robot", hp=100, strength=10, icon="🤖", state="idle", idle=250, map=None, speed=1.0):
+    def __init__(self, name, x, y, type="robot", hp=100, strength=10, icon="🤖", state="idle", idle=250, map=None):
         self.name = name
         self.x = x
         self.y = y
-        self.dx = 0
-        self.dy = 0
+        self.dx = 0 # направление
+        self.dy = 0 # направление
         self.type = type
         self.hp = hp
         self.strength = strength
         self.inventory = []
-        self.icon = icon
+        self.icon = icon  # Теперь это эмодзи
         self.state = state
         self.idle = idle
-        self.cooldown = idle
-        self.map = map
-        self.speed = speed  # скорость в клетках/секунду
-        self.target_x = x
-        self.target_y = y
-        self.is_moving = False
-        self.lerp_factor = 0.0  # 0.0 - начало, 1.0 - конец
+        self.cooldown = idle  # время до следующего действия
+        self.map = map  # Теперь инициализируется при создании
 
     def update(self, dt):
         self.cooldown -= dt
@@ -26,42 +21,39 @@ class Entity:
             self.cooldown = self.idle
             self.act(dt)
 
-        if self.is_moving:
-            self.update_position(dt)
-
-    def update_position(self, dt):
-        if self.lerp_factor >= 1.0:
-            self.x = self.target_x
-            self.y = self.target_y
-            self.is_moving = False
-            self.lerp_factor = 0.0
-            return
-
-        # Линейная интерполяция
-        dx = self.target_x - self.x
-        dy = self.target_y - self.y
-        distance = (dx**2 + dy**2)**0.5
-        if distance == 0:
-            return
-
-        step = self.speed * dt
-        self.lerp_factor += step / distance
-        self.lerp_factor = min(1.0, self.lerp_factor)
-
-        self.x += dx * self.lerp_factor
-        self.y += dy * self.lerp_factor
+    def act(self, dt):
+        pass
 
     def move(self, dx, dy):
+        self.dx = dx
+        self.dy = dy
         new_x = self.x + dx
         new_y = self.y + dy
-        if self.map and self.map.is_bound(new_x, new_y) and self.map.is_walkable(new_x, new_y):
-            self.target_x = new_x
-            self.target_y = new_y
-            self.is_moving = True
+        if self.map.is_walkable(new_x, new_y):
+            self.x, self.y = new_x, new_y
             self.state = "moving"
             return True
         self.state = "idle"
         return False
 
-    def act(self, dt):
-        pass
+    def attack(self, target):
+        target.hp -= self.strength
+        self.state = "attacking"
+        print(f"{self.name} атаковал {target.name}, осталось {target.hp} HP")
+
+    def pick_up(self):
+        itms = self.map.look_up(self)
+        self.inventory.extend(self.map.pick_up(self, itms))
+        self.state = "picking_up"
+        print(f"{self.name} подобрал {item.name}")
+
+    def dig(self, dx, dy):
+        self.dx = dx
+        self.dy = dy
+        if self.map.is_bound(self.x + dx, self.y + dy) and not self.map.is_walkable(self.x + dx, self.y + dy):
+            material, hardness = self.map.dig(self)
+            print(f"{self.name} копает {material}, осталось {hardness} попыток")
+            self.state = "digging"
+        else:
+            print(f"{self.name} копает вникуда")
+            self.state = "idle"
