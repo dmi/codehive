@@ -1,11 +1,11 @@
 import pygame
 import sys
-from pygame_emojis import load_emoji
 from entities import Entity
 from map import Map
 from items import Item
 from characters import get_all_characters
 from logger import get_last_actions
+from emojis import get_emoji
 
 pygame.init()
 
@@ -55,7 +55,8 @@ while running:
 
     if not paused:
         for entity in entities:
-            entity.update(dt)
+            ent_visible = 0 <= entity.x * TILE_SIZE - camera_x < GAME_WIDTH and 0 <= entity.y * TILE_SIZE - camera_y < GAME_HEIGHT
+            entity.update(dt, ent_visible)
 
     # Логика скроллинга
     if selected_entity:
@@ -67,26 +68,43 @@ while running:
     screen.fill((0, 0, 0))  # чёрный фон
 
     # Отрисовка игрового поля
-    for y in range(map.height):
-        for x in range(map.width):
-            tile = map.get_tile(x, y)
-            color = tile.get_color()
-            screen.blit(pygame.Surface((TILE_SIZE, TILE_SIZE)), (x * TILE_SIZE - camera_x, y * TILE_SIZE - camera_y))
-            pygame.draw.rect(screen, color, (x * TILE_SIZE - camera_x, y * TILE_SIZE - camera_y, TILE_SIZE, TILE_SIZE))
+    # Определение видимой области
+    screen_rect = pygame.Rect(0, 0, GAME_WIDTH, GAME_HEIGHT)
 
-    # Отображение предметов
-    for y in range(map.height):
-        for x in range(map.width):
+    # Определяем границы видимой области в координатах карты
+    min_x = max(0, int((camera_x) // TILE_SIZE))
+    max_x = min(map.width, int((camera_x + GAME_WIDTH) // TILE_SIZE) + 1)
+    min_y = max(0, int((camera_y) // TILE_SIZE))
+    max_y = min(map.height, int((camera_y + GAME_HEIGHT) // TILE_SIZE) + 1)
+
+    # Отрисовка клеток только в видимой области
+    for y in range(min_y, max_y):
+        for x in range(min_x, max_x):
+            tile = map.get_tile(x, y)
+            x_screen = x * TILE_SIZE - camera_x
+            y_screen = y * TILE_SIZE - camera_y
+            tile_rect = pygame.Rect(x_screen, y_screen, TILE_SIZE, TILE_SIZE)
+            if screen_rect.colliderect(tile_rect):
+                color = tile.get_color()
+                pygame.draw.rect(screen, color, tile_rect)
+
+    # Отображение предметов только в видимой области
+    for y in range(min_y, max_y):
+        for x in range(min_x, max_x):
             tile = map.get_tile(x, y)
             for item in tile.items:
-                if item.name == "Камень":
-                    emoji = load_emoji("🪨", (TILE_SIZE, TILE_SIZE))
-                    screen.blit(emoji, (x * TILE_SIZE - camera_x, y * TILE_SIZE - camera_y))
+                x_screen = x * TILE_SIZE - camera_x
+                y_screen = y * TILE_SIZE - camera_y
+                if 0 <= x_screen < GAME_WIDTH and 0 <= y_screen < GAME_HEIGHT:
+                    emoji = get_emoji("🪨", (TILE_SIZE, TILE_SIZE))
+                    screen.blit(emoji, (x_screen, y_screen))
 
     # Отображение персонажей
     for entity in entities:
-        screen.blit(entity.emoji, (entity.x * TILE_SIZE - camera_x + entity.vx, entity.y * TILE_SIZE - camera_y + entity.vy))
-        #screen.blit(emoji, (map.width // 2 * TILE_SIZE + entity.vx, map.height // 2 * TILE_SIZE + entity.vy))
+        x_screen = entity.x * TILE_SIZE - camera_x + entity.vx
+        y_screen = entity.y * TILE_SIZE - camera_y + entity.vy
+        if 0 <= x_screen < GAME_WIDTH and 0 <= y_screen < GAME_HEIGHT:
+            screen.blit(entity.emoji, (x_screen, y_screen))
 
     # Отрисовка окна информации
     pygame.draw.rect(screen, (30, 30, 30), (GAME_WIDTH, 0, INFO_WIDTH, HEIGHT))  # тёмно-серый фон
