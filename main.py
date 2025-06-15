@@ -5,6 +5,7 @@ from entities import Entity
 from map import Map
 from items import Item
 from characters import get_all_characters
+from logger import get_last_actions
 
 pygame.init()
 
@@ -18,7 +19,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Hive")
 
 # Создание карты
-map = Map(width=25, height=18)
+map = Map(width=25, height=18, TILE_SIZE=TILE_SIZE)
 
 # Создание персонажей
 entities = get_all_characters(map)
@@ -102,9 +103,9 @@ x: {selected_entity.x} y: {selected_entity.y}"""
     font = pygame.font.SysFont("Arial", 14)
     log_text = font.render("Журнал:", True, COLOR)
     screen.blit(log_text, (GAME_WIDTH + 10, 150))
-    #for i, action in enumerate(get_last_actions()):
-    #    action_text = font.render(action, True, COLOR)
-    #    screen.blit(action_text, (GAME_WIDTH + 10, 170 + i * 15))
+    for i, action in enumerate(get_last_actions()):
+        action_text = font.render(action, True, COLOR)
+        screen.blit(action_text, (GAME_WIDTH + 10, 170 + i * 15))
 
     pygame.display.flip()
 

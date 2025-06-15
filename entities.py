@@ -1,3 +1,4 @@
+from logger import record
 class Entity:
     def __init__(self, name, x, y, type="robot", hp=100, strength=10, icon="🤖", state="idle", idle=250, map=None):
         self.name = name
@@ -61,21 +62,21 @@ class Entity:
     def attack(self, target):
         target.hp -= self.strength
         self.state = "attacking"
-        print(f"{self.name} атаковал {target.name}, осталось {target.hp} HP")
+        record(f"{self.name} атаковал {target.name}, осталось {target.hp} HP", self.name)
 
     def pick_up(self):
         itms = self.map.look_up(self)
         self.inventory.extend(self.map.pick_up(self, itms))
         self.state = "picking_up"
-        print(f"{self.name} подобрал {item.name}")
+        record(f"{self.name} подобрал {[i.name for i in itms]}", self.name)
 
     def dig(self, dx, dy):
         self.dx = dx
         self.dy = dy
         if self.map.is_bound(self.x + dx, self.y + dy) and not self.map.is_walkable(self.x + dx, self.y + dy):
             material, hardness = self.map.dig(self)
-            print(f"{self.name} копает {material}, осталось {hardness} попыток")
+            record(f"{self.name} копает {material}, осталось {hardness} попыток", self.name)
             self.state = "digging"
         else:
-            print(f"{self.name} копает вникуда")
+            record(f"{self.name} копает вникуда", self.name)
             self.state = "idle"
