@@ -70,6 +70,7 @@ while running:
                     screen.blit(emoji, (x * TILE_SIZE, y * TILE_SIZE))
 
     # Отображение персонажей
+    # В цикле отрисовки персонажей
     for entity in entities:
         emoji = load_emoji(entity.icon, (TILE_SIZE, TILE_SIZE))
         screen.blit(emoji, (entity.x * TILE_SIZE, entity.y * TILE_SIZE))
