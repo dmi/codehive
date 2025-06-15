@@ -18,9 +18,10 @@ class Tile:
         return (255, 255, 255)  # Пустая клетка
 
 class Map:
-    def __init__(self, width=25, height=18):
+    def __init__(self, width=25, height=18, TILE_SIZE=32):
         self.width = width
         self.height = height
+        self.TILE_SIZE = TILE_SIZE
         self.tiles = [[Tile() for _ in range(width)] for _ in range(height)]
 
         # Генерация препятствий

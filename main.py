@@ -73,8 +73,7 @@ while running:
     # В цикле отрисовки персонажей
     for entity in entities:
         emoji = load_emoji(entity.icon, (TILE_SIZE, TILE_SIZE))
-        screen.blit(emoji, (entity.x * TILE_SIZE, entity.y * TILE_SIZE))
-        #screen.blit(emoji, (entity.x * TILE_SIZE + entity.vx, entity.y * TILE_SIZE + entity.vy))
+        screen.blit(emoji, (entity.x * TILE_SIZE + entity.vx, entity.y * TILE_SIZE + entity.vy))
 
     # Отрисовка окна информации
     pygame.draw.rect(screen, (30, 30, 30), (GAME_WIDTH, 0, INFO_WIDTH, HEIGHT))  # тёмно-серый фон

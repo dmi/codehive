@@ -3,23 +3,43 @@ class Entity:
         self.name = name
         self.x = x
         self.y = y
-        self.dx = 0 # направление
-        self.dy = 0 # направление
+        self.dx = 0  # направление по x
+        self.dy = 0  # направление по y
         self.type = type
         self.hp = hp
         self.strength = strength
         self.inventory = []
         self.icon = icon  # Теперь это эмодзи
         self.state = state
-        self.idle = idle
+        self.idle = idle  # время между действиями
         self.cooldown = idle  # время до следующего действия
         self.map = map  # Теперь инициализируется при создании
+        self.vx = 0  # смещение по x
+        self.vy = 0  # смещение по y
 
     def update(self, dt):
         self.cooldown -= dt
         if self.cooldown <= 0:
-            self.cooldown = self.idle
+            self.cooldown = self.idle  # время до следующего действия
             self.act(dt)
+
+        # Плавное перемещение
+        if self.state == "moving":
+            # Скорость перемещения (в пикселях за миллисекунду)
+            speed = self.map.TILE_SIZE / self.idle
+            # Смещение за этот кадр
+            move_x = speed * dt * self.dx
+            move_y = speed * dt * self.dy
+            
+            # Обновление смещения
+            self.vx += move_x
+            self.vy += move_y
+            
+            # Проверка, достигли ли мы целевой клетки
+            if abs(self.vx) >= self.map.TILE_SIZE or abs(self.vy) >= self.map.TILE_SIZE:
+                # Сброс смещения
+                self.vx = 0
+                self.vy = 0
 
     def act(self, dt):
         pass
@@ -27,6 +47,8 @@ class Entity:
     def move(self, dx, dy):
         self.dx = dx
         self.dy = dy
+        self.vx = -dx * self.map.TILE_SIZE
+        self.vy = -dy * self.map.TILE_SIZE
         new_x = self.x + dx
         new_y = self.y + dy
         if self.map.is_walkable(new_x, new_y):
