@@ -1,7 +1,16 @@
 from .robot import Robot
 from .builder import Builder
 from .ghost import Ghost
+
 from random import randint
+
+# Животные: 🐶 🐱 🦁  
+# Монстры: 👻 🧟‍♂️ 👾  
+# Растения: 🌿 🌱 🌳
+# Инструменты: 🔧 🛠️ 🪓 🧰 🧯 🔨 ⛏️
+# Дверь: 🚪
+# Стена 🧱
+# Не знаю что: 🛷 🚬
 
 def get_all_characters(map):
 
