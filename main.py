@@ -11,16 +11,20 @@ pygame.init()
 
 # Настройки экрана
 COLOR = (128, 128, 128)
+ZOOM_LEVELS = [16, 32, 64]  # Масштабы
+ZOOM_INDEX = 1  # Текущий индекс масштаба
+TILE_SIZE = ZOOM_LEVELS[ZOOM_INDEX]
+
+# Динамическое определение размеров
 WIDTH, HEIGHT = 1000, 600
-TILE_SIZE = 32
 GAME_WIDTH = int(WIDTH * 0.7)  # 70% для карты
 INFO_WIDTH = WIDTH - GAME_WIDTH  # 30% для информации
 GAME_HEIGHT = HEIGHT
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 pygame.display.set_caption("Hive")
 
 # Создание большой карты
-map = Map(width=1300, height=1300, TILE_SIZE=TILE_SIZE)
+map = Map(width=100, height=100, TILE_SIZE=TILE_SIZE)
 
 # Создание персонажей
 entities = get_all_characters(map)
@@ -32,9 +36,17 @@ paused = False
 selected_entity = entities[0] if entities else None
 
 # Логика скроллинга
-camera_x = selected_entity.x * TILE_SIZE
-camera_y = selected_entity.y * TILE_SIZE
+camera_x = selected_entity.x * TILE_SIZE if selected_entity else 0
+camera_y = selected_entity.y * TILE_SIZE if selected_entity else 0
 camera_speed = 0.1  # Скорость скроллинга
+
+# Переменные для ручного скроллинга
+manual_scroll = False
+scroll_dx = 0
+scroll_dy = 0
+
+# Переменные для масштабирования
+zoom_speed = 0.05  # Скорость масштабирования
 
 while running:
     dt = clock.tick(60)
@@ -43,8 +55,38 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_p:
+            if event.key == pygame.K_q:
+                pygame.quit()
+                sys.exit()
+            if event.key == pygame.K_SPACE:
                 paused = not paused
+            elif event.key == pygame.K_TAB:
+                # Переключение между персонажами
+                if entities:
+                    index = (entities.index(selected_entity) + 1) % len(entities)
+                    selected_entity = entities[index]
+            elif event.key == pygame.K_UP:
+                camera_y -= 10 * TILE_SIZE
+            elif event.key == pygame.K_DOWN:
+                camera_y += 10 * TILE_SIZE
+            elif event.key == pygame.K_LEFT:
+                camera_x -= 10 * TILE_SIZE
+            elif event.key == pygame.K_RIGHT:
+                camera_x += 10 * TILE_SIZE
+            elif event.key == pygame.K_EQUALS:
+                # Увеличение масштаба
+                ZOOM_INDEX = (ZOOM_INDEX + 1) % len(ZOOM_LEVELS)
+                TILE_SIZE = ZOOM_LEVELS[ZOOM_INDEX]
+                map.TILE_SIZE = TILE_SIZE
+                for entity in entities:
+                    entity.emoji = get_emoji(entity.icon, (TILE_SIZE, TILE_SIZE))
+            elif event.key == pygame.K_MINUS:
+                # Уменьшение масштаба
+                ZOOM_INDEX = (ZOOM_INDEX - 1) % len(ZOOM_LEVELS)
+                TILE_SIZE = ZOOM_LEVELS[ZOOM_INDEX]
+                map.TILE_SIZE = TILE_SIZE
+                for entity in entities:
+                    entity.emoji = get_emoji(entity.icon, (TILE_SIZE, TILE_SIZE))
         elif event.type == pygame.MOUSEBUTTONDOWN:
             x, y = pygame.mouse.get_pos()
             tile_x = x // TILE_SIZE
@@ -52,6 +94,13 @@ while running:
             for entity in entities:
                 if entity.x == tile_x and entity.y == tile_y:
                     selected_entity = entity
+        elif event.type == pygame.VIDEORESIZE:
+            # Обновление размеров окна
+            WIDTH, HEIGHT = event.size
+            GAME_WIDTH = int(WIDTH * 0.7)
+            INFO_WIDTH = WIDTH - GAME_WIDTH
+            GAME_HEIGHT = HEIGHT
+            screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 
     if not paused:
         for entity in entities:
