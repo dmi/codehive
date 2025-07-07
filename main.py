@@ -180,7 +180,7 @@ while running:
 HP: {selected_entity.hp}
 Состояние: {selected_entity.state}
 x: {selected_entity.x} y: {selected_entity.y}
-vx: {int(selected_entity.x * TILE_SIZE - camera_x + selected_entity.vx)} vy: {int(selected_entity.y * TILE_SIZE - camera_y + selected_entity.vy)}"""
+vx: {int(selected_entity.x * TILE_SIZE - camera_x + selected_entity.vx)}/{selected_entity.vx} vy: {int(selected_entity.y * TILE_SIZE - camera_y + selected_entity.vy)}/{selected_entity.vy}"""
         i = 0
         for l in info.split('\n'):
             info_text = font.render(l, True, COLOR)

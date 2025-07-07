@@ -1,6 +1,9 @@
 from logger import record
 from emojis import get_emoji
 
+def sign(x):
+    return (x > 0) - (x < 0)
+
 class Entity:
     def __init__(self, name, x, y, type="robot", hp=100, strength=10, icon="🤖", state="idle", idle=250, map=None):
         self.name = name
@@ -43,16 +46,14 @@ class Entity:
                 self.vy += move_y
                 
                 # Проверка и сброс смещения при достижении целевой клетки
-                if abs(self.vx) >= self.map.TILE_SIZE:
+                if sign(self.vx) == sign(self.dx): #>= self.map.TILE_SIZE:
                     self.vx = 0
-                if abs(self.vy) >= self.map.TILE_SIZE:
+                if sign(self.vy) == sign(self.dy): #>= self.map.TILE_SIZE:
                     self.vy = 0
                 if self.vx == 0 and self.vy == 0:
                     self.state = "idle"
             elif self.state == "idle":
                 pass
-                # Создаем эффект "пружины" - движение туда-обратно
-                #self.vx = (self.map.TILE_SIZE / 8) * abs(abs((self.cooldown % self.idle) / (self.idle / 4) - 1) - 0.5)
 
     def act(self, dt):
         pass
@@ -63,9 +64,9 @@ class Entity:
         new_x = self.x + dx
         new_y = self.y + dy
         if self.type=="cursor" and self.map.is_bound(new_x, new_y) or self.map.is_walkable(new_x, new_y):
+            self.x, self.y = new_x, new_y
             self.vx = -dx * self.map.TILE_SIZE
             self.vy = -dy * self.map.TILE_SIZE
-            self.x, self.y = new_x, new_y
             self.state = "moving"
             return True
         self.state = "idle"
