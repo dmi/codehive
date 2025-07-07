@@ -65,14 +65,29 @@ while running:
                 if entities:
                     index = (entities.index(selected_entity) + 1) % len(entities)
                     selected_entity = entities[index]
+            elif event.key == pygame.K_BACKQUOTE:  # Клавиша `
+                # Переключение на курсор (первый в списке)
+                selected_entity = entities[0]
             elif event.key == pygame.K_UP:
-                camera_y -= 10 * TILE_SIZE
+                if selected_entity:
+                    selected_entity.ctl_dx = 0
+                    if selected_entity.ctl_dy >= 0:
+                        selected_entity.ctl_dy -= 1
             elif event.key == pygame.K_DOWN:
-                camera_y += 10 * TILE_SIZE
+                if selected_entity:
+                    selected_entity.ctl_dx = 0
+                    if selected_entity.ctl_dy <= 0:
+                        selected_entity.ctl_dy += 1
             elif event.key == pygame.K_LEFT:
-                camera_x -= 10 * TILE_SIZE
+                if selected_entity:
+                    if selected_entity.ctl_dx >= 0:
+                        selected_entity.ctl_dx -= 1
+                    selected_entity.ctl_dy = 0
             elif event.key == pygame.K_RIGHT:
-                camera_x += 10 * TILE_SIZE
+                if selected_entity:
+                    if selected_entity.ctl_dx <= 0:
+                        selected_entity.ctl_dx += 1
+                    selected_entity.ctl_dy = 0
             elif event.key == pygame.K_EQUALS:
                 # Увеличение масштаба
                 ZOOM_INDEX = (ZOOM_INDEX + 1) % len(ZOOM_LEVELS)

@@ -8,6 +8,8 @@ class Entity:
         self.y = y
         self.dx = 0  # направление по x
         self.dy = 0  # направление по y
+        self.ctl_dx = 0 # управление по x
+        self.ctl_dy = 0 # управление по у
         self.type = type
         self.hp = hp
         self.strength = strength
@@ -40,11 +42,17 @@ class Entity:
                 self.vx += move_x
                 self.vy += move_y
                 
-                # Проверка, достигли ли мы целевой клетки
-                if abs(self.vx) >= self.map.TILE_SIZE or abs(self.vy) >= self.map.TILE_SIZE:
-                    # Сброс смещения
+                # Проверка и сброс смещения при достижении целевой клетки
+                if abs(self.vx) >= self.map.TILE_SIZE:
                     self.vx = 0
+                if abs(self.vy) >= self.map.TILE_SIZE:
                     self.vy = 0
+                if self.vx == 0 and self.vy == 0:
+                    self.state = "idle"
+            elif self.state == "idle":
+                pass
+                # Создаем эффект "пружины" - движение туда-обратно
+                #self.vx = (self.map.TILE_SIZE / 8) * abs(abs((self.cooldown % self.idle) / (self.idle / 4) - 1) - 0.5)
 
     def act(self, dt):
         pass
@@ -52,11 +60,11 @@ class Entity:
     def move(self, dx, dy):
         self.dx = dx
         self.dy = dy
-        self.vx = -dx * self.map.TILE_SIZE
-        self.vy = -dy * self.map.TILE_SIZE
         new_x = self.x + dx
         new_y = self.y + dy
-        if self.map.is_walkable(new_x, new_y):
+        if self.type=="cursor" and self.map.is_bound(new_x, new_y) or self.map.is_walkable(new_x, new_y):
+            self.vx = -dx * self.map.TILE_SIZE
+            self.vy = -dy * self.map.TILE_SIZE
             self.x, self.y = new_x, new_y
             self.state = "moving"
             return True

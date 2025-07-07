@@ -36,7 +36,7 @@ class Map:
         return 0 <= x < self.width and 0 <= y < self.height
 
     def is_walkable(self, x, y):
-        return 0 <= x < self.width and 0 <= y < self.height and self.tiles[y][x].is_walkable
+        return self.is_bound(x, y) and self.tiles[y][x].is_walkable
 
     def get_tile(self, x, y):
         return self.tiles[y][x]
